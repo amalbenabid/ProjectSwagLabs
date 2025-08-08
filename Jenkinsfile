@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '📥 Clonage du projet depuis GitHub...'
-                git 'https://github.com/amalbenabid/Project-Cucumber.git'
+                git 'https://github.com/amalbenabid/ProjectSwagLabs.git'
             }
         }
 
