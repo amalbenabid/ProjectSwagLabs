@@ -32,7 +32,7 @@ pipeline {
         stage('Rapports JUnit') {
             steps {
                 echo '📊 Publication des rapports JUnit/TestNG...'
-                junit 'target/surefire-reports/*.xml'
+                junit 'target/surefire-reports/*.pdf'
             }
         }
 
