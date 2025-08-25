@@ -10,8 +10,8 @@ import org.junit.runner.RunWith;
         "@logout and @suppression"), */
         plugin = {
                 "pretty",
-                "html:target\\Rapport\\Rapport.html",
-                "json:target\\Rapport\\cucumber.json"
+                "html:target/cucumber-reports/cucumber.html",
+                "json:target/cucumber-reports/cucumber.json"
         })
 public class TestRunner {
 
