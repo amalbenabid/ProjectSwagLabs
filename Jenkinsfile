@@ -64,7 +64,11 @@ pipeline {
                 junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
             }
         }
-            bat 'mvn surefire-report:report'
+           stage('Generate Report') {
+               steps {
+                   bat 'mvn surefire-report:report'
+               }
+           }
         stage('Archive Surefire HTML Report') {
             steps {
                 echo '📄 Archiving Surefire HTML test report...'
