@@ -7,34 +7,37 @@
     <groupId>org.example</groupId>
     <artifactId>ProjectSwagLabs</artifactId>
     <version>1.0-SNAPSHOT</version>
-<dependencies>
-    <dependency>
-        <groupId>io.cucumber</groupId>
-        <artifactId>cucumber-java</artifactId>
-        <version>7.18.0</version>
-    </dependency>
 
-    <dependency>
-        <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-java</artifactId>
-        <version>4.22.0</version>
-    </dependency>
+    <dependencies>
+        <!-- Cucumber (Java + JUnit4) -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>7.18.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>7.18.1</version>
+            <scope>test</scope>
+        </dependency>
 
-    <dependency>
-        <groupId>io.cucumber</groupId>
-        <artifactId>cucumber-junit</artifactId>
-        <version>7.18.1</version>
-        <scope>test</scope>
-    </dependency>
+        <!-- Selenium -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.22.0</version>
+        </dependency>
 
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.10.2</version>
-        <scope>test</scope>
-    </dependency>
+        <!-- JUnit 4 (nécessaire pour cucumber-junit) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-</dependencies>
     <build>
         <plugins>
             <!-- Plugin pour exécuter les tests -->
@@ -47,28 +50,12 @@
                         <include>**/*Test.java</include>
                         <include>**/*Runner.java</include>
                     </includes>
-                    <!-- Important si tu veux les logs détaillés -->
+                    <reportsDirectory>target/surefire-reports</reportsDirectory>
                     <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
             </plugin>
 
-            <!-- Plugin pour générer un rapport HTML lisible -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.2.5</version>
-            </plugin>
-        
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
-                <configuration>
-                    <reportsDirectory>target/surefire-reports</reportsDirectory>
-                </configuration>
-            </plugin>
-
+            <!-- Plugin pour générer un rapport HTML -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
@@ -76,10 +63,6 @@
             </plugin>
         </plugins>
     </build>
-
-
-
-
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
