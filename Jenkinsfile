@@ -2,13 +2,11 @@ pipeline {
     agent any
 
     tools {
-        jdk   'jdk-23'          // ⚠️ mets ici le nom de ton JDK déclaré dans Jenkins
-        maven 'maven-3.9.11'     // ⚠️ idem pour Maven
+        jdk   'jdk-23'          // Nom du JDK déclaré dans Jenkins
+        maven 'maven-3.9.11'    // Nom de Maven déclaré dans Jenkins
     }
 
     environment {
-        REPORT_DIR  = 'target/surefire-reports'
-        REPORT_NAME = 'junit-report.html'
         EMAIL_TO    = 'benabidamal01@gmail.com'
         MIME_TYPE   = 'text/html'
     }
@@ -28,7 +26,7 @@ pipeline {
                 echo '📥 Checking out code from GitHub...'
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']],     // adapte si ta branche est "master"
+                    branches: [[name: '*/master']],   // adapte si ta branche est différente
                     userRemoteConfigs: [[
                         url: 'https://github.com/amalbenabid/ProjectSwagLabs.git',
                         credentialsId: 'gituse'
@@ -47,7 +45,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    echo '🧪 Running Selenium/JUnit tests...'
+                    echo '🧪 Running Selenium/Cucumber/JUnit tests...'
                     int status = bat(
                         script: 'mvn test',
                         returnStatus: true
@@ -63,31 +61,43 @@ pipeline {
         stage('Publish JUnit Reports') {
             steps {
                 echo '📊 Publishing JUnit XML reports...'
-                junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
             }
         }
 
-        stage('Archive HTML Report') {
+        stage('Archive Surefire HTML Report') {
             steps {
-                echo '📄 Archiving HTML test report...'
-                // ⚠️ tu dois générer un rapport HTML via surefire, cucumber-reporting ou autre
-                // Ici on suppose que tu génères déjà target/site/surefire-report.html
+                echo '📄 Archiving Surefire HTML test report...'
                 archiveArtifacts artifacts: "target/site/surefire-report.html", fingerprint: true
-                echo "📎 Report available at: ${env.BUILD_URL}artifact/target/site/surefire-report.html"
+            }
+        }
+
+        stage('Publish Cucumber Report') {
+            steps {
+                echo '🥒 Publishing Cucumber HTML report...'
+                publishHTML([
+                    reportDir: 'target/cucumber-reports',
+                    reportFiles: 'cucumber.html',
+                    reportName: 'Cucumber HTML Report',
+                    keepAll: true
+                ])
             }
         }
     }
 
     post {
         success {
-            echo '✅ Pipeline executed successfully. Test report archived.'
+            echo '✅ Pipeline executed successfully. Reports archived.'
             emailext(
                 subject: "✅ Build SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    <p>The Selenium/JUnit pipeline completed successfully.</p>
+                    <p>The Selenium/Cucumber/JUnit pipeline completed successfully.</p>
                     <p>
                         <a href='${env.BUILD_URL}artifact/target/site/surefire-report.html'>
-                            📄 View JUnit report
+                            📄 View Surefire HTML Report
+                        </a><br/>
+                        <a href='${env.BUILD_URL}Cucumber_20HTML_20Report/'>
+                            🥒 View Cucumber HTML Report
                         </a>
                     </p>
                 """,
@@ -97,14 +107,17 @@ pipeline {
         }
 
         unstable {
-            echo '⚠️ Pipeline unstable due to test failures. Report still archived.'
+            echo '⚠️ Pipeline unstable due to test failures. Reports still archived.'
             emailext(
                 subject: "⚠️ Build UNSTABLE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    <p>Some JUnit tests failed.</p>
+                    <p>Some tests failed.</p>
                     <p>
                         <a href='${env.BUILD_URL}artifact/target/site/surefire-report.html'>
-                            📄 View JUnit report
+                            📄 View Surefire HTML Report
+                        </a><br/>
+                        <a href='${env.BUILD_URL}Cucumber_20HTML_20Report/'>
+                            🥒 View Cucumber HTML Report
                         </a>
                     </p>
                 """,
