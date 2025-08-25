@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         jdk   'jdk23'          // Nom du JDK déclaré dans Jenkins
-        maven 'maven-3.9.11'    // Nom de Maven déclaré dans Jenkins
+        maven 'Maven_3.9.9'    // Nom de Maven déclaré dans Jenkins
     }
 
     environment {
