@@ -2,6 +2,9 @@ package Runner;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
+import io.qameta.allure.junit4.AllureJunit4;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
@@ -15,5 +18,6 @@ import org.junit.runner.RunWith;
                 "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
         })
 public class TestRunner {
+
 
 }
