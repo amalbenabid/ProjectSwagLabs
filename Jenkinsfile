@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     tools {
-        jdk   'jdk23'          // Nom du JDK déclaré dans Jenkins
-        maven 'Maven_3.9.9'    // Nom de Maven déclaré dans Jenkins
+        jdk   'jdk23'
+        maven 'Maven_3.9.9'
     }
 
     environment {
-        EMAIL_TO    = 'benabidamal01@gmail.com'
-        MIME_TYPE   = 'text/html'
+        EMAIL_TO  = 'benabidamal01@gmail.com'
+        MIME_TYPE = 'text/html'
     }
 
     stages {
@@ -26,7 +26,7 @@ pipeline {
                 echo '📥 Checking out code from GitHub...'
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']],   // adapte si ta branche est différente
+                    branches: [[name: '*/master']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/amalbenabid/ProjectSwagLabs.git',
                         credentialsId: 'Github-token'
@@ -42,12 +42,12 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Tests & Generate Allure Results') {
             steps {
                 script {
-                    echo '🧪 Running Selenium/Cucumber/JUnit tests...'
+                    echo '🧪 Running tests and generating Allure results...'
                     int status = bat(
-                        script: 'mvn test',
+                        script: 'mvn clean test',
                         returnStatus: true
                     )
                     if (status != 0) {
@@ -64,21 +64,21 @@ pipeline {
                 junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
             }
         }
-           stage('Generate Report') {
-               steps {
-                   bat 'mvn surefire-report:report'
-               }
-           }
+
+        stage('Generate Surefire HTML Report') {
+            steps {
+                bat 'mvn surefire-report:report'
+            }
+        }
+
         stage('Archive Surefire HTML Report') {
             steps {
-                echo '📄 Archiving Surefire HTML test report...'
                 archiveArtifacts artifacts: "target/site/surefire-report.html", fingerprint: true
             }
         }
 
         stage('Publish Cucumber Report') {
             steps {
-                echo '🥒 Publishing Cucumber HTML report...'
                 publishHTML([
                     reportDir: 'target/cucumber-reports',
                     reportFiles: 'cucumber.html',
@@ -87,22 +87,22 @@ pipeline {
                 ])
             }
         }
-       stage('Allure Results') {
-           steps {
-               bat 'mvn allure:report'
-           }
-       }
 
-       stage('Allure Report') {
-           steps {
-               allure([
-                   includeProperties: false,
-                   jdk: '',
-                   results: [[path: 'target/allure-results']]
-               ])
-           }
-       }
+        stage('Generate Allure Report') {
+            steps {
+                bat 'mvn allure:report'
+            }
+        }
 
+        stage('Publish Allure Report') {
+            steps {
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'target/allure-results']]
+                ])
+            }
+        }
     }
 
     post {
@@ -128,37 +128,10 @@ pipeline {
 
         unstable {
             echo '⚠️ Pipeline unstable due to test failures. Reports still archived.'
-            emailext(
-                subject: "⚠️ Build UNSTABLE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    <p>Some tests failed.</p>
-                    <p>
-                        <a href='${env.BUILD_URL}artifact/target/site/surefire-report.html'>
-                            📄 View Surefire HTML Report
-                        </a><br/>
-                        <a href='${env.BUILD_URL}Cucumber_20HTML_20Report/'>
-                            🥒 View Cucumber HTML Report
-                        </a>
-                    </p>
-                """,
-                mimeType: "${MIME_TYPE}",
-                to: "${EMAIL_TO}"
-            )
         }
 
         failure {
             echo '❌ Pipeline failed. Please check the logs for details.'
-            emailext(
-                subject: "❌ Build FAILED - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    <p>The pipeline failed before or during Maven build/tests.</p>
-                    <p>
-                        <a href='${env.BUILD_URL}console'>🧾 View Console Output</a>
-                    </p>
-                """,
-                mimeType: "${MIME_TYPE}",
-                to: "${EMAIL_TO}"
-            )
         }
 
         cleanup {
