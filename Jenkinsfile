@@ -46,10 +46,7 @@ pipeline {
             steps {
                 script {
                     echo '🧪 Running tests and generating Allure results...'
-                    int status = bat(
-                        script: 'mvn clean test',
-                        returnStatus: true
-                    )
+                    int status = bat(script: 'mvn clean test', returnStatus: true)
                     if (status != 0) {
                         echo "⚠️ Tests failed with exit code ${status} — marking build UNSTABLE."
                         currentBuild.result = 'UNSTABLE'
@@ -65,15 +62,11 @@ pipeline {
             }
         }
 
-        stage('Generate Surefire HTML Report') {
+        stage('Generate & Archive Surefire HTML Report') {
             steps {
+                echo '📄 Generating Surefire HTML report...'
                 bat 'mvn surefire-report:report'
-            }
-        }
-
-        stage('Archive Surefire HTML Report') {
-            steps {
-                archiveArtifacts artifacts: "target/site/surefire-report.html", fingerprint: true
+                archiveArtifacts artifacts: 'target/site/**/*', fingerprint: true
             }
         }
 
@@ -88,17 +81,12 @@ pipeline {
             }
         }
 
-        stage('Generate Allure Report') {
+        stage('Generate & Publish Allure Report') {
             steps {
+                echo '✨ Generating and publishing Allure report...'
                 bat 'mvn allure:report'
-            }
-        }
-
-        stage('Publish Allure Report') {
-            steps {
                 allure([
                     includeProperties: false,
-                    jdk: '',
                     results: [[path: 'target/allure-results']]
                 ])
             }
@@ -113,12 +101,8 @@ pipeline {
                 body: """
                     <p>The Selenium/Cucumber/JUnit pipeline completed successfully.</p>
                     <p>
-                        <a href='${env.BUILD_URL}artifact/target/site/surefire-report.html'>
-                            📄 View Surefire HTML Report
-                        </a><br/>
-                        <a href='${env.BUILD_URL}Cucumber_20HTML_20Report/'>
-                            🥒 View Cucumber HTML Report
-                        </a>
+                        <a href='${env.BUILD_URL}artifact/target/site/index.html'>📄 Surefire HTML Report</a><br/>
+                        <a href='${env.BUILD_URL}Cucumber_20HTML_20Report/'>🥒 Cucumber HTML Report</a>
                     </p>
                 """,
                 mimeType: "${MIME_TYPE}",
