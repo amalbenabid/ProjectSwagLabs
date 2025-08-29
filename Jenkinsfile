@@ -87,15 +87,22 @@ pipeline {
                 ])
             }
         }
-         stage('Allure Report') {
-                    steps {
-                        allure([
-                            includeProperties: false,
-                            jdk: '',
-                            results: [[path: 'target/allure-results']]
-                        ])
-                    }
-                }
+       stage('Allure Results') {
+           steps {
+               bat 'mvn allure:report'
+           }
+       }
+
+       stage('Allure Report') {
+           steps {
+               allure([
+                   includeProperties: false,
+                   jdk: '',
+                   results: [[path: 'target/allure-results']]
+               ])
+           }
+       }
+
     }
 
     post {
